@@ -53,7 +53,8 @@ public static class Hookersxtensions
             var eventType = eventReceivingMethod.EventType.ToString();
             eventType = eventType.Replace("(","").Replace(")","").Replace(".","_").Replace(",","_").Replace(" ","");
 
-            sb.AppendLine($"EventBus.{containingSymbol.Name}_{methodName}_{eventType}.Add(this);");
+            sb.AppendLine($"EventBus.{containingSymbol.Name}_{methodName}_{eventType}.Add(new(this));");
+			sb.AppendLine($"instanceEventBusHookIndex = EventBus.{containingSymbol.Name}_{methodName}_{eventType}.Count - 1;");
         }
         return sb;
     }
@@ -76,7 +77,7 @@ public static class Hookersxtensions
             var eventType = eventReceivingMethod.EventType.ToString();
             eventType = eventType.Replace("(","").Replace(")","").Replace(".","_").Replace(",","_").Replace(" ","");
             
-            sb.AppendLine($"EventBus.{containingSymbol.Name}_{methodName}_{eventType}.Remove(this);");
+            sb.AppendLine($"EventBus.{containingSymbol.Name}_{methodName}_{eventType}.RemoveAt(instanceEventBusHookIndex);");
         }
         return sb;
     }
@@ -100,6 +101,8 @@ public static class Hookersxtensions
             namespace {{hook.PartialClass.ContainingNamespace}}{
 
                 public partial class {{hook.PartialClass.Name}}{
+
+                    private int instanceEventBusHookIndex;
                     
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
                     public void Hook()

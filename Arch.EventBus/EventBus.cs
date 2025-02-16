@@ -159,7 +159,15 @@ public static class EventBusExtensions
                 var template = $$"""
                     for(var index = 0; index < {{instanceList}}.Count; index++)
                     {
-                        {{instanceList}}[index].{{methodName}}({{passEvent}});
+                        if ({{instanceList}}[index].TryGetTarget(out var instance))
+                        {
+                            instance.{{methodName}}({{passEvent}});
+                        }
+                        else
+                        {
+                            {{instanceList}}.RemoveAt(index);
+                            index--;
+                        }
                     }
                 """;
                 sb.AppendLine(template);
@@ -191,7 +199,7 @@ public static class EventBusExtensions
                 continue;
             }
             
-            sb.AppendLine($"public static List<{containingSymbol}> {containingSymbol.Name}_{methodName}_{eventType} = new List<{containingSymbol}>(128);");
+            sb.AppendLine($"public static List<WeakReference<{containingSymbol}>> {containingSymbol.Name}_{methodName}_{eventType} = new List<WeakReference<{containingSymbol}>>(128);");
         }
         return sb;
     }
