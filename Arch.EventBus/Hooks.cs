@@ -53,7 +53,8 @@ public static class Hookersxtensions
             var eventType = eventReceivingMethod.EventType.ToString();
             eventType = eventType.Replace("(","").Replace(")","").Replace(".","_").Replace(",","_").Replace(" ","");
 
-            sb.AppendLine($"EventBus.{containingSymbol.Name}_{methodName}_{eventType}.Add(new(this));");
+            sb.AppendLine($"""GlobalEventRegistry.Instances.TryAdd("{containingSymbol.Name}_{methodName}_{eventType}", this);""");
+			sb.AppendLine($"EventBus.{containingSymbol.Name}_{methodName}_{eventType}.Add(new(this));");
 			sb.AppendLine($"instanceEventBusHookIndex = EventBus.{containingSymbol.Name}_{methodName}_{eventType}.Count - 1;");
         }
         return sb;

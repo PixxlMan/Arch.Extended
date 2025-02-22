@@ -103,7 +103,7 @@ public static class EventBusExtensions
         }
         return sb;
     }
-    
+
     /// <summary>
     ///     Appends all methods redirecting events.
     /// </summary>
@@ -120,6 +120,24 @@ public static class EventBusExtensions
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Send({{RefKindToString(callMethod.RefKind)}} {{callMethod.EventType.ToDisplayString()}} {{callMethod.EventType.Name.ToLower()}}){
+            lock (GlobalEventRegistry.SyncRoot)
+            {
+                if (!GlobalEventRegistry.StaticEvents.ContainsKey("{{callMethod.EventType.ToDisplayString()}}"))
+                {
+                    GlobalEventRegistry.StaticEvents.Add("{{callMethod.EventType.ToDisplayString()}}", new());
+                }
+                
+                GlobalEventRegistry.StaticEvents["{{callMethod.EventType.ToDisplayString()}}"].Add(
+                    new(
+                        delegate ({{RefKindToString(callMethod.RefKind)}} object e)
+                        {
+                            {{callMethod.EventType.ToDisplayString()}} e2 = ({{callMethod.EventType.ToDisplayString()}})e;
+                            Send(ref e2);
+                        }
+                    )
+                );
+            }
+
             {{callMethodsInOrder}}
         }
         """;
